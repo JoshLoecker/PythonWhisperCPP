@@ -2,7 +2,6 @@ import os
 import argparse
 from pathlib import Path
 from dataclasses import dataclass
-from enum import Enum
 from whisper import Whisper
 
 @dataclass
@@ -17,6 +16,7 @@ class Arguments:
     input: Path
     force_creation: bool
     executable: Path
+    dry_run: bool
     is_file: bool = None  # Will be evaluated at __post_init__
     video_extensions: tuple[str] = (".mp4", ".mkv", ".avi", ".webm")
     
@@ -90,6 +90,14 @@ def parse_args() -> Arguments:
         action="store_true",
         help="Force the creation of the subtitles even if they already exist"
     )
+    parser.add_argument(
+        "-n", "--dry-run",
+        required=False,
+        default=False,
+        dest="dry_run",
+        action="store_true",
+        help="Do not execute whisper.cpp, only show what would be performed. Useful to ensure everything is set up properly"
+    )
     
     # One of the two optins below is required
     path = parser.add_mutually_exclusive_group(required=True)
@@ -113,8 +121,6 @@ def parse_args() -> Arguments:
 def main():
     args = parse_args()
     
-    print(f"Found whisper.cpp executable at {args.executable}")
-    
     whisper = Whisper(
         whisper_executable=args.executable,
         model_path=args.model_path,
@@ -122,13 +128,24 @@ def main():
         whisper_threads=args.whisper_threads,
         force_creation=args.force_creation
     )
-    
+    # Collect input files
+    input_files: list[Path] = []
     if args.is_file:
-        whisper.create_subtitles(args.input)
+        input_files.append(args.input)
     else:
-        for file in args.input.iterdir():
+        # Recursively iterate through the input directory
+        for file in args.input.rglob("*"):
             if file.suffix in args.video_extensions:
-                whisper.create_subtitles(file)
+                input_files.append(file)
+    for file in input_files:
+        if args.dry_run:
+            create_srt: bool = Whisper.should_create_srt(file)
+            if create_srt:
+                print(f"Would create {file.with_suffix('.en.srt')}")
+            if not create_srt:
+                print(f"SRT file exists for {file}")
+        else:
+            whisper.create_subtitles(file)
     
     
 if __name__ == '__main__':
