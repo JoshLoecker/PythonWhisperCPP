@@ -76,7 +76,7 @@ class Whisper:
             log_write = open(self._log_file, "w")
             self._create_wav()
             print(f"CREATE:\t{self._final_srt_file}")
-            output_srt = subprocess.run(
+            subprocess.run(
                 args=[
                     str(self._whisper_executable),
                     "--model", str(self._model_path),

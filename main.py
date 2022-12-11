@@ -128,22 +128,22 @@ def main():
         whisper_threads=args.whisper_threads,
         force_creation=args.force_creation
     )
+    
     # Collect input files
     input_files: list[Path] = []
     if args.is_file:
         input_files.append(args.input)
     else:
-        # Recursively iterate through the input directory
-        for file in args.input.rglob("*"):
-            if file.suffix in args.video_extensions:
-                input_files.append(file)
+        # Recursively collect files in the input directory
+        input_files = [file for file in args.input.rglob("*") if file.is_file() and file.suffix in args.video_extensions]
+    
+    # Create subtitles for each input file if not a dry run
     for file in input_files:
         if args.dry_run:
-            create_srt: bool = Whisper.should_create_srt(file)
-            if create_srt:
-                print(f"Would create {file.with_suffix('.en.srt')}")
-            if not create_srt:
-                print(f"SRT file exists for {file}")
+            if Whisper.should_create_srt(file):
+                print(f"CREATE:\t{file.with_suffix('.en.srt')}")
+            else:
+                print(f"EXISTS:\t{file}")
         else:
             whisper.create_subtitles(file)
     
