@@ -140,10 +140,10 @@ def main():
     # Create subtitles for each input file if not a dry run
     for file in input_files:
         if args.dry_run:
-            if Whisper.should_create_srt(file):
+            if Whisper.should_create_srt(input_file=file, force=args.force_creation):
                 print(f"CREATE:\t{file.with_suffix('.en.srt')}")
             else:
-                print(f"EXISTS:\t{file}")
+                print(f"EXISTS:\t{file.with_suffix('.en.srt')}")
         else:
             whisper.create_subtitles(file)
     

@@ -142,11 +142,11 @@ class Whisper:
             return True
 
     @classmethod
-    def should_create_srt(cls, input_file: str | Path) -> bool:
+    def should_create_srt(cls, input_file: str | Path, force: bool) -> bool:
         input_file = Path(input_file)
         
         srt_file: Path = cls._get_final_srt_file(input_file)
-        if srt_file.exists():
+        if srt_file.exists() and not force:
             return False
         else:
             return True
