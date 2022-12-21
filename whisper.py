@@ -60,6 +60,7 @@ class Whisper:
     def cleanup(self):
         """
         Remove the temporary files created by this class
+        Currently only removes the WAV file under the /tmp folder
         """
         self._temp_wav_file.unlink(missing_ok=True)
     

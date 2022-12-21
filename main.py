@@ -150,6 +150,7 @@ def main():
                 exists += 1
         else:
             whisper.create_subtitles(file)
+            print("")
     
     if args.dry_run:
         # Create a simple table of the results
