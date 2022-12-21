@@ -138,14 +138,27 @@ def main():
         input_files = [file for file in args.input.rglob("*") if file.is_file() and file.suffix in args.video_extensions]
     
     # Create subtitles for each input file if not a dry run
+    to_create: int = 0
+    exists: int = 0
     for file in input_files:
         if args.dry_run:
             if Whisper.should_create_srt(input_file=file, force=args.force_creation):
                 print(f"CREATE:\t{file.with_suffix('.en.srt')}")
+                to_create += 1
             else:
                 print(f"EXISTS:\t{file.with_suffix('.en.srt')}")
+                exists += 1
         else:
             whisper.create_subtitles(file)
+    
+    if args.dry_run:
+        # Create a simple table of the results
+        print("\n")
+        print(f"{'='*10} RESULTS {'='*10}")
+        print(f"{'To Create:':<10} {to_create}")
+        print(f"{'Existing:':<10} {exists}")
+        print(f"{'='*29}")
+        
     
     
 if __name__ == '__main__':
